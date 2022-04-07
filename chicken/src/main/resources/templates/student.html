@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PP2 Urlaub Übersicht</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet"
+          type="text/css">
+    <link href="/css/jquery.datetimepicker.min.css"
+          rel="stylesheet">
+    <link href="/css/site.css"
+          rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h1>Übersicht: Freistellungen</h1>
+
+    <h2>Urlaubszeiten</h2>
+    <table class="table mb-5" id="urlaub_table" th:object="${myholiday}">
+        <thead>
+        <tr>
+            <th>Datum</th>
+            <th>von</th>
+            <th>bis</th>
+            <th>Zeit (min)</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody th:remove="all-but-first">
+        <tr th:each="holiday : ${myholiday}" th:object="${holiday}">
+            <td th:text="*{#temporals.format(getTimePeriod().getL1().toLocalDate(), 'dd.MM.yyyy')}">Datum</td>
+            <td th:text="*{#temporals.format(getTimePeriod().getL1().toLocalTime(), 'HH:mm')}">von</td>
+            <td th:text="*{#temporals.format(getTimePeriod().getL2().toLocalTime(), 'HH:mm')}">bis</td>
+            <td th:text="*{getTimePeriod().getPeriodOfMinute()}">Zeit (min)</td>
+            <td>
+                <span style="color: RGBA(50, 50, 50, 0.5)"
+                      th:if="*{!isDeletable()}">Kann nicht mehr stoniert werden!</span>
+                <form th:action="@{/urlaubabmedlung/{urlaubid}(urlaubid=*{getId()})}" th:if="*{isDeletable()}"
+                      th:method="post">
+                    <button class="btn btn-danger" th:aria-label="'Klicken Sie drauf, um die Anmeldung für die Urlaub ' + ' zu stonieren'"
+                            type="submit">
+                        Stornieren
+                    </button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td><strong>Summe</strong></td>
+            <td></td>
+            <td></td>
+            <td><strong th:text="${summe}">0</strong></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><strong>Resturlaub</strong></td>
+            <td></td>
+            <td></td>
+            <td><strong th:text="${restUrlaub}">240</strong></td>
+        </tr>
+        </tfoot>
+    </table>
+    <h2 id="klausur">Klausuren</h2>
+    <p class="alert alert-warning" th:if="${klausuren.size() == 0}">Sie sind für keine Klausuren angemeldet.</p>
+    <p class="alert" th:if="${klausuren.size() > 0}">Sie sind für folgende Klausuren angemeldet:</p>
+
+    <table class="table mb-5" id="klausur_table" th:if="${klausuren.size() > 0}">
+        <thead>
+        <tr>
+            <th>Veranstaltung</th>
+            <th>Klausurzeit</th>
+            <th>Freistellung vom Praktikum</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody th:remove="all-but-first">
+        <tr th:each="klausur : ${klausuren}" th:object="${klausur}">
+            <td th:text="*{nameFormatter()}"></td>
+            <td th:text="*{getTimePeriod().formatTimePeriod()}"></td>
+            <!--                <td th:text="*{getTimePeriod()}"></td>-->
+            <td th:text="*{getFreeTimePeriod().formatFreeTimePeriod()}"></td>
+            <!--                <td th:text="*{getFreeTimePeriod()}"></td>-->
+            <td>
+                <span style="color: RGBA(50, 50, 50, 0.5)"
+                      th:if="*{!isDeletable()}">Kann nicht mehr stoniert werden!</span>
+                <form th:action="@{/klausurabmedlung/{klausurid}(klausurid=*{getId()})}" th:if="*{isDeletable()}"
+                      th:method="post">
+                    <button class="btn btn-danger" th:aria-label="'Klicken Sie drauf, um die Anmeldung für die klausur ' + *{nameFormatter()} + ' zu stonieren'"
+                            type="submit">
+                        Stornieren
+                    </button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="text-center pt-5">
+        <a href="/urlaubanmeldung">
+            <button class="btn bg-blue mx-5 text-white p-3">Urlaub anmelden</button>
+        </a>
+        <a href="/klausuranmeldung">
+            <button class="btn bg-yellow mx-5 p-3">Klausur anmelden</button>
+        </a>
+    </div>
+
+    <script src="/js/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/jquery.datetimepicker.full.min.js"></script>
+    <script>
+
+        var startTime = null;
+        var endTime = null;
+
+        jQuery('#tag').datetimepicker({
+            format: 'd.m.Y',
+            timepicker: false,
+            lang: 'de',
+            weeks: true,
+            dayOfWeekStart: 1
+        });
+        jQuery('#von').datetimepicker({
+            format: 'H:i',
+            datepicker: false,
+            allowTimes: startTime
+        });
+        jQuery('#bis').datetimepicker({
+            format: 'H:i',
+            datepicker: false,
+            allowTimes: endTime
+        });
+    </script>
+</div>
+</body>
+</html>
